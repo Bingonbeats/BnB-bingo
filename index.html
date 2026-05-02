@@ -130,7 +130,9 @@ const tasks = [
 "BNB BABES",
 "Find someone wearing BNB socks",
 "Sharing a bite or drink together",
-"Find your dance partner"
+"Find your dance partner",
+"Baddies love bingo on cam",
+"Take a pic of BNB foam finger"
 ];
 
 const saved = JSON.parse(localStorage.getItem("bnb") || "{}");
@@ -206,11 +208,11 @@ function resetGame() {
 /* GALLERY */
 function toggleGallery() {
   const gallery = document.getElementById("gallery");
-  const grid = document.getElementById("galleryGrid");
+  const galleryGrid = document.getElementById("galleryGrid");
 
   if (gallery.style.display === "none") {
     gallery.style.display = "block";
-    grid.innerHTML = "";
+    galleryGrid.innerHTML = "";
 
     Object.values(saved).forEach(item => {
       if (item?.photo) {
@@ -218,7 +220,7 @@ function toggleGallery() {
         img.src = item.photo;
         img.style.width = "100%";
         img.style.borderRadius = "12px";
-        grid.appendChild(img);
+        galleryGrid.appendChild(img);
       }
     });
 
@@ -234,9 +236,14 @@ function checkBingo() {
   );
 
   const wins = [
-    [0,1,2],[3,4,5],[6,7,8],
-    [0,3,6],[1,4,7],[2,5,8],
-    [0,4,8],[2,4,6]
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [9,10,11],
+
+    [0,3,6,9],
+    [1,4,7,10],
+    [2,5,8,11]
   ];
 
   const hasBingo = wins.some(combo => combo.every(i => checked[i]));
