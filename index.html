@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BNB Bingo</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial Black, sans-serif;
+  background: #b93a2f;
+  color: #f6d28a;
+  text-align: center;
+}
+
+.title {
+  font-size: 32px;
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 15px;
+}
+
+.cell {
+  background: #d94b3d;
+  border-radius: 20px;
+  padding: 15px;
+  font-size: 12px;
+  box-shadow: inset 0 0 0 3px #f6d28a;
+}
+
+.checked {
+  background: #3bb273;
+  color: white;
+  text-decoration: line-through;
+}
+
+button {
+  margin-top: 8px;
+  padding: 6px;
+  border-radius: 10px;
+  border: none;
+}
+
+img {
+  width: 100%;
+  margin-top: 8px;
+  border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="title">BNB BINGO</div>
+<div class="grid" id="grid"></div>
+
+<script>
+const tasks = [
+"Take a pic with someone wearing sunglasses",
+"Catch a BNB sticker in the wild",
+"Find your colour twin",
+"Sing along with a stranger",
+"Someone with a BNB fan",
+"BNB BABES",
+"Find someone wearing BNB socks",
+"Sharing a bite or drink together",
+"Find your dance partner"
+];
+
+const saved = JSON.parse(localStorage.getItem("bnb") || "{}");
+const grid = document.getElementById("grid");
+
+tasks.forEach((task, i) => {
+  const div = document.createElement("div");
+  div.className = "cell";
+  div.innerHTML = `<div>${task}</div>`;
+
+  if (saved[i]?.checked) div.classList.add("checked");
+
+  div.onclick = () => {
+    div.classList.toggle("checked");
+    saved[i] = saved[i] || {};
+    saved[i].checked = div.classList.contains("checked");
+    localStorage.setItem("bnb", JSON.stringify(saved));
+  };
+
+  const btn = document.createElement("button");
+  btn.innerText = "📸";
+
+  const input = document.createElement("input");
+  input.type = "file";
+  input.style.display = "none";
+
+  btn.onclick = (e) => {
+    e.stopPropagation();
+    input.click();
+  };
+
+  input.onchange = () => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      saved[i] = saved[i] || {};
+      saved[i].photo = reader.result;
+      localStorage.setItem("bnb", JSON.stringify(saved));
+      location.reload();
+    };
+    reader.readAsDataURL(input.files[0]);
+  };
+
+  div.appendChild(btn);
+  div.appendChild(input);
+
+  if (saved[i]?.photo) {
+    const img = document.createElement("img");
+    img.src = saved[i].photo;
+    div.appendChild(img);
+  }
+
+  grid.appendChild(div);
+});
+</script>
+
+</body>
+</html>
