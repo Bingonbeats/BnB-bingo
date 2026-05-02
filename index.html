@@ -10,17 +10,15 @@
 body {
   margin: 0;
   font-family: 'Fredoka', sans-serif;
-  background: #b93a2f;
+  background: #b73a2d;
   color: #f6d28a;
   text-align: center;
 }
 
-/* HEADER */
+/* TITLE */
 .title {
-  font-size: 34px;
-  padding: 20px 10px 5px;
-  line-height: 1.1;
-  text-shadow: 2px 2px #00000030;
+  font-size: 38px;
+  padding: 25px 10px 5px;
 }
 
 .subtitle {
@@ -28,68 +26,62 @@ body {
   margin-bottom: 10px;
 }
 
+/* BUTTONS */
+.top-buttons button {
+  margin: 5px;
+  padding: 10px 16px;
+  border-radius: 50px;
+  border: none;
+  background: #f6d28a;
+  color: #b73a2d;
+  font-weight: bold;
+}
+
 /* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  padding: 15px;
+  gap: 16px;
+  padding: 20px;
 }
 
 /* TILE */
 .cell {
-  background: #d94b3d;
-  border-radius: 22px;
-  padding: 16px 10px;
-  font-size: 13px;
-  box-shadow: inset 0 0 0 4px #f6d28a;
-  transition: 0.2s;
+  background: #d84a3b;
+  border-radius: 28px;
+  padding: 16px;
+  box-shadow: inset 0 0 0 6px #f6d28a;
 }
 
-.cell.checked {
+/* CENTER */
+.center {
+  background: #f6d28a;
+  color: #b73a2d;
+}
+
+/* CHECKED */
+.checked {
   background: #3bb273;
   color: white;
   text-decoration: line-through;
 }
 
-/* CENTER TILE */
-.center {
-  background: #f6d28a;
-  color: #b93a2f;
-  font-weight: bold;
-}
-
-/* BUTTON */
-button {
-  margin-top: 8px;
-  padding: 6px 10px;
-  border: none;
-  border-radius: 12px;
-  background: #f6d28a;
-  color: #b93a2f;
-  font-weight: bold;
-}
-
 /* IMAGE */
 img {
   width: 100%;
-  margin-top: 8px;
-  border-radius: 12px;
+  margin-top: 10px;
+  border-radius: 14px;
 }
 
-/* BINGO POPUP */
+/* POPUP */
 .popup {
   position: fixed;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #f6d28a;
-  color: #b93a2f;
-  padding: 30px;
-  font-size: 28px;
-  border-radius: 20px;
+  inset: 0;
+  background: rgba(183,58,45,0.95);
   display: none;
-  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
 }
 
 /* CONFETTI */
@@ -97,15 +89,12 @@ img {
   position: fixed;
   width: 8px;
   height: 8px;
-  background: yellow;
   top: 0;
   animation: fall 3s linear forwards;
 }
 
 @keyframes fall {
-  to {
-    transform: translateY(100vh) rotate(720deg);
-  }
+  to { transform: translateY(100vh); }
 }
 </style>
 </head>
@@ -115,8 +104,21 @@ img {
 <div class="title">BNB BINGO</div>
 <div class="subtitle">THE BADDIE CHECKLIST</div>
 
+<div class="top-buttons">
+  <button onclick="resetGame()">Reset</button>
+  <button onclick="toggleGallery()">Gallery</button>
+</div>
+
 <div class="grid" id="grid"></div>
+
 <div class="popup" id="popup">🎉 BINGO! 🎉</div>
+
+<div id="gallery" style="display:none;padding:20px;">
+  <h2>Gallery 📸</h2>
+  <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;"></div>
+</div>
+
+<audio id="winSound" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
 
 <script>
 const tasks = [
@@ -195,29 +197,69 @@ tasks.forEach((task, i) => {
   grid.appendChild(div);
 });
 
-/* 🎉 BINGO CHECK */
-function checkBingo() {
-  const checked = document.querySelectorAll(".checked").length;
+/* RESET */
+function resetGame() {
+  localStorage.removeItem("bnb");
+  location.reload();
+}
 
-  if (checked >= 5) {
-    document.getElementById("popup").style.display = "block";
-    launchConfetti();
+/* GALLERY */
+function toggleGallery() {
+  const gallery = document.getElementById("gallery");
+  const grid = document.getElementById("galleryGrid");
 
-    setTimeout(() => {
-      document.getElementById("popup").style.display = "none";
-    }, 2000);
+  if (gallery.style.display === "none") {
+    gallery.style.display = "block";
+    grid.innerHTML = "";
+
+    Object.values(saved).forEach(item => {
+      if (item?.photo) {
+        const img = document.createElement("img");
+        img.src = item.photo;
+        img.style.width = "100%";
+        img.style.borderRadius = "12px";
+        grid.appendChild(img);
+      }
+    });
+
+  } else {
+    gallery.style.display = "none";
   }
 }
 
-/* 🎉 CONFETTI */
+/* BINGO CHECK */
+function checkBingo() {
+  const checked = Array.from(document.querySelectorAll(".cell")).map(c =>
+    c.classList.contains("checked")
+  );
+
+  const wins = [
+    [0,1,2],[3,4,5],[6,7,8],
+    [0,3,6],[1,4,7],[2,5,8],
+    [0,4,8],[2,4,6]
+  ];
+
+  const hasBingo = wins.some(combo => combo.every(i => checked[i]));
+
+  if (hasBingo) {
+    document.getElementById("popup").style.display = "flex";
+    launchConfetti();
+    document.getElementById("winSound").play();
+
+    setTimeout(() => {
+      document.getElementById("popup").style.display = "none";
+    }, 2500);
+  }
+}
+
+/* CONFETTI */
 function launchConfetti() {
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 80; i++) {
     const div = document.createElement("div");
     div.className = "confetti";
     div.style.left = Math.random() * 100 + "vw";
-    div.style.background = ["#f6d28a","#ffffff","#3bb273","#ffcc00"][Math.floor(Math.random()*4)];
+    div.style.background = ["#f6d28a","#fff","#3bb273"][Math.floor(Math.random()*3)];
     document.body.appendChild(div);
-
     setTimeout(() => div.remove(), 3000);
   }
 }
