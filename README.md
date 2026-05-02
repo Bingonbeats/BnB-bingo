@@ -1,2 +1,2 @@
-# BnB-bingo
+# BnB-Hunt
 BnB hunt
