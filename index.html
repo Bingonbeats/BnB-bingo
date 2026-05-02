@@ -4,52 +4,108 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BNB Bingo</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600&display=swap" rel="stylesheet">
+
 <style>
 body {
   margin: 0;
-  font-family: Arial Black, sans-serif;
+  font-family: 'Fredoka', sans-serif;
   background: #b93a2f;
   color: #f6d28a;
   text-align: center;
 }
 
+/* HEADER */
 .title {
-  font-size: 32px;
-  padding: 20px;
+  font-size: 34px;
+  padding: 20px 10px 5px;
+  line-height: 1.1;
+  text-shadow: 2px 2px #00000030;
 }
 
+.subtitle {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 14px;
   padding: 15px;
 }
 
+/* TILE */
 .cell {
   background: #d94b3d;
-  border-radius: 20px;
-  padding: 15px;
-  font-size: 12px;
-  box-shadow: inset 0 0 0 3px #f6d28a;
+  border-radius: 22px;
+  padding: 16px 10px;
+  font-size: 13px;
+  box-shadow: inset 0 0 0 4px #f6d28a;
+  transition: 0.2s;
 }
 
-.checked {
+.cell.checked {
   background: #3bb273;
   color: white;
   text-decoration: line-through;
 }
 
-button {
-  margin-top: 8px;
-  padding: 6px;
-  border-radius: 10px;
-  border: none;
+/* CENTER TILE */
+.center {
+  background: #f6d28a;
+  color: #b93a2f;
+  font-weight: bold;
 }
 
+/* BUTTON */
+button {
+  margin-top: 8px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 12px;
+  background: #f6d28a;
+  color: #b93a2f;
+  font-weight: bold;
+}
+
+/* IMAGE */
 img {
   width: 100%;
   margin-top: 8px;
-  border-radius: 10px;
+  border-radius: 12px;
+}
+
+/* BINGO POPUP */
+.popup {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #f6d28a;
+  color: #b93a2f;
+  padding: 30px;
+  font-size: 28px;
+  border-radius: 20px;
+  display: none;
+  z-index: 10;
+}
+
+/* CONFETTI */
+.confetti {
+  position: fixed;
+  width: 8px;
+  height: 8px;
+  background: yellow;
+  top: 0;
+  animation: fall 3s linear forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+  }
 }
 </style>
 </head>
@@ -57,7 +113,10 @@ img {
 <body>
 
 <div class="title">BNB BINGO</div>
+<div class="subtitle">THE BADDIE CHECKLIST</div>
+
 <div class="grid" id="grid"></div>
+<div class="popup" id="popup">🎉 BINGO! 🎉</div>
 
 <script>
 const tasks = [
@@ -78,15 +137,26 @@ const grid = document.getElementById("grid");
 tasks.forEach((task, i) => {
   const div = document.createElement("div");
   div.className = "cell";
+
+  if (task === "BNB BABES") div.classList.add("center");
+
   div.innerHTML = `<div>${task}</div>`;
 
   if (saved[i]?.checked) div.classList.add("checked");
 
   div.onclick = () => {
+    if (task === "BNB BABES") return;
+
+    if (!saved[i]?.photo) {
+      alert("Add a photo first 📸");
+      return;
+    }
+
     div.classList.toggle("checked");
-    saved[i] = saved[i] || {};
     saved[i].checked = div.classList.contains("checked");
     localStorage.setItem("bnb", JSON.stringify(saved));
+
+    checkBingo();
   };
 
   const btn = document.createElement("button");
@@ -94,6 +164,7 @@ tasks.forEach((task, i) => {
 
   const input = document.createElement("input");
   input.type = "file";
+  input.accept = "image/*";
   input.style.display = "none";
 
   btn.onclick = (e) => {
@@ -123,6 +194,33 @@ tasks.forEach((task, i) => {
 
   grid.appendChild(div);
 });
+
+/* 🎉 BINGO CHECK */
+function checkBingo() {
+  const checked = document.querySelectorAll(".checked").length;
+
+  if (checked >= 5) {
+    document.getElementById("popup").style.display = "block";
+    launchConfetti();
+
+    setTimeout(() => {
+      document.getElementById("popup").style.display = "none";
+    }, 2000);
+  }
+}
+
+/* 🎉 CONFETTI */
+function launchConfetti() {
+  for (let i = 0; i < 50; i++) {
+    const div = document.createElement("div");
+    div.className = "confetti";
+    div.style.left = Math.random() * 100 + "vw";
+    div.style.background = ["#f6d28a","#ffffff","#3bb273","#ffcc00"][Math.floor(Math.random()*4)];
+    document.body.appendChild(div);
+
+    setTimeout(() => div.remove(), 3000);
+  }
+}
 </script>
 
 </body>
